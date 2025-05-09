@@ -1,106 +1,235 @@
--- Script Principal
-local Player = game.Players.LocalPlayer
-local Mouse = Player:GetMouse()
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local ESP = {}
+-- Anti-Ban / Anti-Detect Avançado by Suysbs X
+pcall(function()
+	-- Bloqueia qualquer evento de Kick (como funções de kick) do LocalPlayer
+	local player = game:GetService("Players").LocalPlayer
+	for _, v in pairs(getconnections(player.Kick)) do
+		v:Disable()
+	end
 
--- Criar um painel
-local ScreenGui = Instance.new("ScreenGui", Player.PlayerGui)
-local Panel = Instance.new("Frame", ScreenGui)
-Panel.Size = UDim2.new(0, 300, 0, 400)
-Panel.Position = UDim2.new(0.5, -150, 0.5, -200)
-Panel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Panel.Visible = true
+	-- Evita que o jogo monitore a execução do script
+	if hookfunction and getrawmetatable then
+		local mt = getrawmetatable(game)
+		setreadonly(mt, false)
+		local old = mt.__namecall
+		mt.__namecall = newcclosure(function(self, ...)
+			local args = {...}
+			local method = getnamecallmethod()
 
--- Criar um título para o painel
-local Title = Instance.new("TextLabel", Panel)
-Title.Size = UDim2.new(1, 0, 0, 50)
-Title.Text = "Script Hub"
-Title.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+			if method == "Kick" or tostring(self):lower():find("kick") then
+				return
+			end
 
--- Função para adicionar um botão
-local function addButton(name, callback)
-    local Button = Instance.new("TextButton", Panel)
-    Button.Size = UDim2.new(1, 0, 0, 50)
-    Button.Text = name
-    Button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    
-    Button.MouseButton1Click:Connect(callback)
-end
+			if method == "SetCore" and args[1] == "Kick" then
+				return
+			end
 
--- Funções para ver FPS, Ping e Resolução
-local function showStats()
-    local fpsLabel = Instance.new("TextLabel", Panel)
-    fpsLabel.Size = UDim2.new(1, 0, 0, 50)
-    fpsLabel.Position = UDim2.new(0, 0, 0, 50)
-    fpsLabel.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    fpsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    
-    game:GetService("RunService").RenderStepped:Connect(function()
-        fpsLabel.Text = "FPS: " .. tostring(1 / game:GetService("RunService").Heartbeat:Wait())
-    end)
-end
+			return old(self, unpack(args))
+		end)
+	end
 
-local function showPing()
-    local pingLabel = Instance.new("TextLabel", Panel)
-    pingLabel.Size = UDim2.new(1, 0, 0, 50)
-    pingLabel.Position = UDim2.new(0, 0, 0, 100)
-    pingLabel.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    pingLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    
-    Players.PlayerAdded:Connect(function(player)
-        pingLabel.Text = "Ping: " .. tostring(player:GetNetworkPing())
-    end)
-end
+	local function protectGui()
+		local coreGui = game:GetService("CoreGui")
+		local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
+		for _, gui in pairs(coreGui:GetChildren()) do
+			if gui.Name:find("PainelSuysbsX") then
+				gui.Parent = playerGui
+			end
+		end
+	end
+	protectGui()
 
-local function showResolution()
-    local resLabel = Instance.new("TextLabel", Panel)
-    resLabel.Size = UDim2.new(1, 0, 0, 50)
-    resLabel.Position = UDim2.new(0, 0, 0, 150)
-    resLabel.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    resLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    
-    resLabel.Text = "Resolução: " .. tostring(workspace.CurrentCamera.ViewportSize.X) .. " x " .. tostring(workspace.CurrentCamera.ViewportSize.Y)
-end
+	local function deepScan(obj)
+		for _, child in ipairs(obj:GetChildren()) do
+			if child:IsA("LocalScript") and (child.Name:lower():find("kick") or child.Name:lower():find("ban")) then
+				child:Destroy()
+			end
+			deepScan(child)
+		end
+	end
+	deepScan(game:GetService("Players").LocalPlayer)
 
--- Função para ESP (Extra Sensory Perception)
-local function ESPFunction()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= Player then
-            local espBox = Instance.new("BoxHandleAdornment")
-            espBox.Size = Vector3.new(4, 6, 4)
-            espBox.Color3 = Color3.fromRGB(255, 255, 0) -- Amarelo
-            espBox.AlwaysOnTop = true
-            espBox.ZIndex = 10
-            espBox.Adornee = player.Character or player.CharacterAdded:Wait()
+	local function disableWarnings()
+		local coreGui = game:GetService("CoreGui")
+		for _, obj in ipairs(coreGui:GetChildren()) do
+			if obj:IsA("Message") then
+				obj:Destroy()
+			end
+		end
+	end
+	disableWarnings()
 
-            espBox.Parent = player.Character:WaitForChild("Head")
-            table.insert(ESP, espBox)
-        end
-    end
-end
+	local function protectPlayer()
+		local player = game:GetService("Players").LocalPlayer
+		local mt = getrawmetatable(player)
+		setreadonly(mt, false)
+		local oldIndex = mt.__index
+		mt.__index = newcclosure(function(self, key)
+			if key == "Character" then
+				return oldIndex(self, key)
+			elseif key == "Kick" then
+				return nil
+			end
+			return oldIndex(self, key)
+		end)
+	end
+	protectPlayer()
 
--- Criar o botão para abrir/fechar o painel
-local toggleButton = Instance.new("TextButton", ScreenGui)
-toggleButton.Size = UDim2.new(0, 100, 0, 50)
-toggleButton.Position = UDim2.new(0, 10, 0, 10)
-toggleButton.Text = "Abrir Painel"
-toggleButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	local function protectRemotes()
+		for _, remote in pairs(game:GetService("ReplicatedStorage"):GetChildren()) do
+			if remote:IsA("RemoteEvent") then
+				remote.OnClientEvent:Connect(function() return end)
+			end
+		end
+	end
+	protectRemotes()
 
-toggleButton.MouseButton1Click:Connect(function()
-    Panel.Visible = not Panel.Visible
-    toggleButton.Text = Panel.Visible and "Fechar Painel" or "Abrir Painel"
+	local function hideConsole()
+		local devConsole = game:GetService("CoreGui"):FindFirstChildOfClass("DeveloperConsole")
+		if devConsole then devConsole.Enabled = false end
+	end
+	hideConsole()
+
+	local function protectLocalScripts()
+		for _, script in pairs(game:GetService("Players").LocalPlayer.PlayerScripts:GetChildren()) do
+			if script:IsA("LocalScript") then
+				if script.Name:find("ban") or script.Name:find("kick") then
+					script:Destroy()
+				end
+			end
+		end
+	end
+	protectLocalScripts()
+
+	while true do
+		wait(10)
+		local function disableDisconnect()
+			for _, v in pairs(getconnections(player.PlayerAdded)) do
+				v:Disable()
+			end
+		end
+		disableDisconnect()
+	end
 end)
 
--- Adicionar Botões ao Painel
-addButton("Ver FPS", showStats)
-addButton("Ver Ping", showPing)
-addButton("Ver Resolução", showResolution)
-addButton("Ativar ESP", ESPFunction)
+-- 🌟 Painel Suysbs X UI
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 
--- Ajustar o tamanho do painel
-Panel.Size = UDim2.new(0, 400, 0, 300)
+local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+ScreenGui.Name = "PainelSuysbsX"
+
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 300, 0, 500)  -- Aumentei o tamanho da UI
+Frame.Position = UDim2.new(0, -320, 0.3, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Frame.BorderSizePixel = 0
+Frame.Visible = true
+Frame.Active = true
+Frame.Draggable = true
+Frame.Parent = ScreenGui
+
+local corner = Instance.new("UICorner", Frame)
+corner.CornerRadius = UDim.new(0, 10)
+
+TweenService:Create(Frame, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+	Position = UDim2.new(0, 20, 0.3, 0)
+}):Play()
+
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundTransparency = 1
+Title.Text = "🌟 Painel Suysbs X"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+
+local y = 50
+local function createButton(text, callback)
+	local btn = Instance.new("TextButton", Frame)
+	btn.Size = UDim2.new(0.9, 0, 0, 30)
+	btn.Position = UDim2.new(0.05, 0, 0, y)
+	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Text = text
+	btn.Font = Enum.Font.Gotham
+	btn.TextSize = 14
+	local bcorner = Instance.new("UICorner", btn)
+	bcorner.CornerRadius = UDim.new(0, 6)
+	btn.MouseEnter:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 60)}):Play()
+	end)
+	btn.MouseLeave:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+	end)
+	btn.MouseButton1Click:Connect(callback)
+	y += 35
+end
+
+local playerBox = Instance.new("TextBox", Frame)
+playerBox.Size = UDim2.new(0.9, 0, 0, 30)
+playerBox.Position = UDim2.new(0.05, 0, 0, y)
+playerBox.PlaceholderText = "Digite nome do jogador"
+playerBox.Text = ""
+playerBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+playerBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+playerBox.Font = Enum.Font.Gotham
+playerBox.TextSize = 14
+local pcorn = Instance.new("UICorner", playerBox)
+pcorn.CornerRadius = UDim.new(0, 6)
+y += 40
+
+-- Funções existentes
+createButton("Definir Velocidade", function()
+	local speed = tonumber(playerBox.Text)
+	if speed then
+		LocalPlayer.Character.Humanoid.WalkSpeed = speed
+	end
+end)
+
+createButton("Teleportar para Jogador", function()
+	local target = Players:FindFirstChild(playerBox.Text)
+	if target and target.Character then
+		LocalPlayer.Character:MoveTo(target.Character:GetPivot().Position + Vector3.new(0, 3, 0))
+	end
+end)
+
+createButton("Trazer Jogador até Você", function()
+	local target = Players:FindFirstChild(playerBox.Text)
+	if target and target.Character then
+		local myPos = LocalPlayer.Character:GetPivot().Position
+		target.Character:SetPrimaryPartCFrame(CFrame.new(myPos + Vector3.new(2, 1, 0)))
+	end
+end)
+
+createButton("👁 Ver Tela do Jogador", function()
+	local target = Players:FindFirstChild(playerBox.Text)
+	if target and target.Character and target.Character:FindFirstChild("Humanoid") then
+		Camera.CameraSubject = target.Character.Humanoid
+	end
+end)
+
+createButton("↩️ Voltar à Sua Tela", function()
+	Camera.CameraSubject = LocalPlayer.Character:FindFirstChild("Humanoid")
+end)
+
+createButton("Pulo Power!", function()
+	LocalPlayer.Character.Humanoid.JumpPower = 120
+	LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+end)
+
+createButton("Ativar Voo", function()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
+end)
+
+-- 🔥 NOVAS FUNÇÕES
+
+createButton("👻 Invisibilidade", function()
+	local char = LocalPlayer.Character
+	for _, v in pairs(char:GetDescendants()) do
+		if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
+			v.Transparency = 1
+		end
+	end
+end)
