@@ -198,31 +198,35 @@ createButton("👻 Invisibilidade", function()
 		end
 	end
 end)
--- 🔘 Botão flutuante para abrir/fechar o painel
+-- 🔘 Botão flutuante com borda colorida
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 120, 0, 35)
 toggleButton.Position = UDim2.new(0, 10, 0, 10)
-toggleButton.Text = "Painel "
-toggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-toggleButton.TextColor3 = Color3.fromRGB(0, 255, 127)
+toggleButton.Text = "Painel"
+toggleButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.Font = Enum.Font.GothamBold
 toggleButton.TextSize = 14
 toggleButton.Active = true
 toggleButton.Draggable = true
 toggleButton.Parent = ScreenGui
 
-local toggleUICorner = Instance.new("UICorner", toggleButton)
+-- Arredondar cantos
+local toggleUICorner = Instance.new("UICorner")
 toggleUICorner.CornerRadius = UDim.new(0, 8)
+toggleUICorner.Parent = toggleButton
 
-local toggleStroke = Instance.new("UIStroke", toggleButton)
+-- Borda colorida (verde neon)
+local toggleStroke = Instance.new("UIStroke")
 toggleStroke.Color = Color3.fromRGB(0, 255, 127)
-toggleStroke.Thickness = 1.5
-
--- Estado inicial visível
-local painelVisivel = true
+toggleStroke.Thickness = 2
+toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+toggleStroke.Parent = toggleButton
 
 -- Alternar visibilidade do painel
+local painelVisivel = true
 toggleButton.MouseButton1Click:Connect(function()
 	painelVisivel = not painelVisivel
 	Frame.Visible = painelVisivel
 end)
+
