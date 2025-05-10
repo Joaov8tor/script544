@@ -201,7 +201,7 @@ end)
 local noclipEnabled = false
 
 -- Botão: Atravessar Paredes
-createButton("🚪 Atravessar Paredes: OFF", function(btn)
+createButton("🚪 Atravessar Paredes: ", function(btn)
 	noclipEnabled = not noclipEnabled
 	btn.Text = noclipEnabled and "🚪 Atravessar Paredes: ON" or "🚪 Atravessar Paredes: OFF"
 end)
