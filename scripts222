@@ -198,35 +198,53 @@ createButton("👻 Invisibilidade", function()
 		end
 	end
 end)
--- 🔘 Botão flutuante com borda colorida
+local noclipEnabled = false
+
+-- Botão: Atravessar Paredes
+createButton("🚪 Atravessar Paredes: OFF", function(btn)
+	noclipEnabled = not noclipEnabled
+	btn.Text = noclipEnabled and "🚪 Atravessar Paredes: ON" or "🚪 Atravessar Paredes: OFF"
+end)
+
+-- NoClip em tempo real
+game:GetService("RunService").Stepped:Connect(function()
+	if noclipEnabled and LocalPlayer.Character then
+		for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.CanCollide = false
+			end
+		end
+	end
+end)
+
+
+
+
+-- 🔘 Botão flutuante para abrir/fechar o painel
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 120, 0, 35)
 toggleButton.Position = UDim2.new(0, 10, 0, 10)
-toggleButton.Text = "Painel"
-toggleButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Text = "Painel "
+toggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+toggleButton.TextColor3 = Color3.fromRGB(0, 255, 127)
 toggleButton.Font = Enum.Font.GothamBold
 toggleButton.TextSize = 14
 toggleButton.Active = true
 toggleButton.Draggable = true
 toggleButton.Parent = ScreenGui
 
--- Arredondar cantos
-local toggleUICorner = Instance.new("UICorner")
+local toggleUICorner = Instance.new("UICorner", toggleButton)
 toggleUICorner.CornerRadius = UDim.new(0, 8)
-toggleUICorner.Parent = toggleButton
 
--- Borda colorida (verde neon)
-local toggleStroke = Instance.new("UIStroke")
+local toggleStroke = Instance.new("UIStroke", toggleButton)
 toggleStroke.Color = Color3.fromRGB(0, 255, 127)
-toggleStroke.Thickness = 2
-toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-toggleStroke.Parent = toggleButton
+toggleStroke.Thickness = 1.5
+
+-- Estado inicial visível
+local painelVisivel = true
 
 -- Alternar visibilidade do painel
-local painelVisivel = true
 toggleButton.MouseButton1Click:Connect(function()
 	painelVisivel = not painelVisivel
 	Frame.Visible = painelVisivel
 end)
-
