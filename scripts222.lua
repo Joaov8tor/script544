@@ -196,17 +196,8 @@ createButton("👻 Invisibilidade", function()
 		end
 	end
 end)
-createButton("🚗 Ativar Fly Car", function()
-    local carScript = [[
-        SGTSOBF_WWwwWWWww={...}
-        SGTSOBF_HHhHHHHHh="";
-        for _,SGTSOBF_dDDDDDDdD in pairs(SGTSOBF_WWwwWWWww)do SGTSOBF_HHhHHHHHh=SGTSOBF_HHhHHHHHh..SGTSOBF_dDDDDDDdD;end;
-        SGTSOBF_CCCcCCcCC=function(SGTSOBF_fFFFFfFfF)loadstring(SGTSOBF_fFFFFfFfF)()end;
-        SGTSOBF_CCCcCCcCC(SGTSOBF_HHhHHHHHh)
-    ]]
-    
-    -- Execute the obfuscated fly car script
-    loadstring(carScript)()
+createButton("🚀 Ativar Fly Car", function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/Joaov8tor/fly-car/refs/heads/main/fly.lua'))()
 end)
 
 local noclipEnabled = false
@@ -242,7 +233,7 @@ createButton("🔍 Ativar ESP", function()
 	end
 end)
 -- Função para Ativar ESP nos carros
-createButton("🚗 Ativar ESP Carro", function()
+createButton("🚗 Ativar ESP Carro OFF", function()
     for _, vehicle in pairs(workspace:GetChildren()) do
         if vehicle:IsA("Model") and vehicle:FindFirstChild("PrimaryPart") then
             local box = Instance.new("BoxHandleAdornment")
