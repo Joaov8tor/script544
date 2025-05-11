@@ -95,7 +95,7 @@ local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 ScreenGui.Name = "CLH_Hub_UI"
 
 local Frame = Instance.new("Frame", ScreenGui)
-Frame.Size = UDim2.new(0, 360, 0, 400)
+Frame.Size = UDim2.new(0, 360, 0, 505)
 Frame.Position = UDim2.new(0, 20, 0, 80)
 Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 Frame.BorderSizePixel = 0
@@ -107,7 +107,6 @@ local UIStroke = Instance.new("UIStroke", Frame)
 UIStroke.Thickness = 2
 UIStroke.Color = Color3.fromRGB(0, 255, 127)
 
--- Título
 local Title = Instance.new("TextLabel", Frame)
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.BackgroundTransparency = 1
@@ -116,7 +115,6 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18
 
--- Funções
 local y = 50
 local function createButton(text, callback)
 	local btn = Instance.new("TextButton", Frame)
@@ -134,7 +132,7 @@ local function createButton(text, callback)
 	btn.MouseLeave:Connect(function()
 		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
 	end)
-	btn.MouseButton1Click:Connect(callback)
+	btn.MouseButton1Click:Connect(function() callback(btn) end)
 	y += 35
 end
 
@@ -150,7 +148,7 @@ playerBox.TextSize = 14
 Instance.new("UICorner", playerBox).CornerRadius = UDim.new(0, 6)
 y += 40
 
--- Botões com funcionalidades
+-- Funções
 createButton("Definir Velocidade", function()
 	local speed = tonumber(playerBox.Text)
 	if speed then LocalPlayer.Character.Humanoid.WalkSpeed = speed end
@@ -198,15 +196,25 @@ createButton("👻 Invisibilidade", function()
 		end
 	end
 end)
-local noclipEnabled = false
+createButton("🚗 Ativar Fly Car", function()
+    local carScript = [[
+        SGTSOBF_WWwwWWWww={...}
+        SGTSOBF_HHhHHHHHh="";
+        for _,SGTSOBF_dDDDDDDdD in pairs(SGTSOBF_WWwwWWWww)do SGTSOBF_HHhHHHHHh=SGTSOBF_HHhHHHHHh..SGTSOBF_dDDDDDDdD;end;
+        SGTSOBF_CCCcCCcCC=function(SGTSOBF_fFFFFfFfF)loadstring(SGTSOBF_fFFFFfFfF)()end;
+        SGTSOBF_CCCcCCcCC(SGTSOBF_HHhHHHHHh)
+    ]]
+    
+    -- Execute the obfuscated fly car script
+    loadstring(carScript)()
+end)
 
--- Botão: Atravessar Paredes
+local noclipEnabled = false
 createButton("🚪 Atravessar Paredes: ", function(btn)
 	noclipEnabled = not noclipEnabled
 	btn.Text = noclipEnabled and "🚪 Atravessar Paredes: ON" or "🚪 Atravessar Paredes: OFF"
 end)
 
--- NoClip em tempo real
 game:GetService("RunService").Stepped:Connect(function()
 	if noclipEnabled and LocalPlayer.Character then
 		for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
@@ -217,10 +225,40 @@ game:GetService("RunService").Stepped:Connect(function()
 	end
 end)
 
+-- ESP
+createButton("🔍 Ativar ESP", function()
+	for _, plr in pairs(Players:GetPlayers()) do
+		if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+			local box = Instance.new("BoxHandleAdornment")
+			box.Name = "ESPBox"
+			box.Adornee = plr.Character
+			box.Size = Vector3.new(4, 6, 2)
+			box.AlwaysOnTop = true
+			box.ZIndex = 10
+			box.Transparency = 0.5
+			box.Color3 = plr.Team and plr.Team.TeamColor.Color or Color3.new(1, 0, 0)
+			box.Parent = plr.Character
+		end
+	end
+end)
+-- Função para Ativar ESP nos carros
+createButton("🚗 Ativar ESP Carro", function()
+    for _, vehicle in pairs(workspace:GetChildren()) do
+        if vehicle:IsA("Model") and vehicle:FindFirstChild("PrimaryPart") then
+            local box = Instance.new("BoxHandleAdornment")
+            box.Name = "ESPCarBox"
+            box.Adornee = vehicle.PrimaryPart
+            box.Size = vehicle:GetExtentsSize() -- Define o tamanho da caixa conforme o tamanho do veículo
+            box.AlwaysOnTop = true
+            box.ZIndex = 10
+            box.Transparency = 0.5
+            box.Color3 = Color3.new(0, 0, 1) -- Defina a cor do ESP para azul (pode mudar conforme a necessidade)
+            box.Parent = vehicle
+        end
+    end
+end)
 
-
-
--- 🔘 Botão flutuante para abrir/fechar o painel
+-- Botão flutuante para abrir/fechar
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 120, 0, 35)
 toggleButton.Position = UDim2.new(0, 10, 0, 10)
@@ -233,17 +271,12 @@ toggleButton.Active = true
 toggleButton.Draggable = true
 toggleButton.Parent = ScreenGui
 
-local toggleUICorner = Instance.new("UICorner", toggleButton)
-toggleUICorner.CornerRadius = UDim.new(0, 8)
-
+Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 8)
 local toggleStroke = Instance.new("UIStroke", toggleButton)
 toggleStroke.Color = Color3.fromRGB(0, 255, 127)
 toggleStroke.Thickness = 1.5
 
--- Estado inicial visível
 local painelVisivel = true
-
--- Alternar visibilidade do painel
 toggleButton.MouseButton1Click:Connect(function()
 	painelVisivel = not painelVisivel
 	Frame.Visible = painelVisivel
