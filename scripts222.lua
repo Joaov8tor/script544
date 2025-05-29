@@ -604,7 +604,6 @@ local function createButton(text, callback)
 		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
 	end)
 	btn.MouseButton1Click:Connect(function() callback(btn) end)
-	y += 35
 end
 
 local playerBox = Instance.new("TextBox", Frame)
